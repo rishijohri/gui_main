@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="efb6e340-f6a1-410f-ae5e-1a3ae3d6562e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/DatasetView.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/PreviewImagesComponent.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/ResultView.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/UserOptions.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.js" afterDir="false" />
@@ -11,6 +15,9 @@
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FavoritesManager">
+    <favorites_list name="gui_main" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -61,7 +68,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1615246243099</updated>
-      <workItem from="1615246246334" duration="6646000" />
+      <workItem from="1615246246334" duration="7150000" />
+      <workItem from="1615298344214" duration="29550000" />
     </task>
     <servers />
   </component>

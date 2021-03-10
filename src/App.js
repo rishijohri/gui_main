@@ -1,61 +1,33 @@
 import React from "react";
-import {
-    Container,
-    Grid,
-    Box,
-    Paper,
-    AppBar,
-    Toolbar,
-    Typography,
-    List,
-    ListItem,
-    ListItemText,
-    ListItemIcon,
-    ListSubheader,
-} from "@material-ui/core";
-import {PermMediaOutlined, AssessmentOutlined} from "@material-ui/icons";
-
-function UserOptions() {
-    return (
-        <React.Fragment>
-            <Paper variant="outlined">
-                <List component="nav" subheader={<ListSubheader>Available options</ListSubheader>}>
-                    <ListItem button selected={true}>
-                        <ListItemIcon><PermMediaOutlined/></ListItemIcon>
-                        <ListItemText
-                            primary="Dataset"
-                            secondary="Manipulate and update dataset for the model."
-                        />
-                    </ListItem>
-                    <ListItem button>
-                        <ListItemIcon><AssessmentOutlined/></ListItemIcon>
-                        <ListItemText
-                            primary="Results"
-                            secondary="See results and insights of the deep learning model."
-                        />
-                    </ListItem>
-                </List>
-            </Paper>
-        </React.Fragment>
-    );
-}
+import {BrowserRouter as Router, Switch, Route} from "react-router-dom";
+import {Container, Grid, Box, AppBar, Toolbar, Typography} from "@material-ui/core";
+import UserOptions from "./UserOptions";
+import DatasetView from "./DatasetView";
+import ResultView from "./ResultView";
 
 function App() {
     return (
         <div className="app">
             <Container maxWidth="xl" disableGutters>
                 <AppBar position="static" color="primary">
-                    <Toolbar variant="dense">
-                        <Typography variant="h6" color="inherit">
+                    <Toolbar variant="dense" style={{justifyContent: 'center'}}>
+                        <Typography variant="h5">
                             GUI to manipulate (add augmentation) and update images dataset
                         </Typography>
                     </Toolbar>
                 </AppBar>
                 <Box padding={1}>
-                    <Grid container>
-                        <Grid item xs={2}><UserOptions/></Grid>
-                        <Grid item container xs={4}/>
-                        <Grid item container xs={6}/>
+                    <Grid container spacing={1}>
+                        <Router>
+                            <Grid item xs={2}><UserOptions/></Grid>
+                            <Grid item xs={10}>
+                                <Switch>
+                                    <Route path="/dataset"><DatasetView/></Route>
+                                    <Route path="/result"><ResultView/></Route>
+                                    <Router path="/"/>
+                                </Switch>
+                            </Grid>
+                        </Router>
                     </Grid>
                 </Box>
             </Container>
