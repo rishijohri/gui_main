@@ -18,7 +18,7 @@ import {fileOpen} from "browser-fs-access";
 import PreviewImagesComponent from "./PreviewImagesComponent";
 import {AddPhotoAlternateSharp, VisibilitySharp, CloudUploadSharp} from "@material-ui/icons";
 
-async function handleSelectFiles() {
+async function handleOpenAndReadFiles() {
     // get files from user
     const blobs = await fileOpen({
         mimeTypes: ["image/*"],
@@ -31,20 +31,32 @@ async function handleSelectFiles() {
     // read the selected files' data
     for (let index = 0; index < blobs.length; ++index) {
         const reader = new FileReader();
-        reader.addEventListener('load', event => {
-            tileData.push({src: event.target.result, alt: blobs[index].name});
-        });
+        reader.onload = event => tileData.push({src: event.target.result, alt: blobs[index].name});
         /* for progress management
-        reader.addEventListener('progress', (event) => {
+        reader.onprogress = event => {
             if (event.loaded && event.total) {
                 const percent = (event.loaded / event.total) * 100;
                 console.log(`Progress: ${Math.round(percent)}`);
             }
-        });
+        };
         */
         reader.readAsDataURL(blobs[index]);
     }
-    return tileData;
+    return {data: tileData, numFiles: blobs.length};
+}
+
+function handleSelectFiles(setTileData) {
+    handleOpenAndReadFiles().then(result => {
+        // will come here only if data was read successfully
+        const stop = setInterval(() => {
+            if (result.data.length === result.numFiles) {
+                setTileData(result.data);
+                clearInterval(stop);
+            }
+        }, 10);
+        // stop interval after 30s automatically
+        setTimeout(() => clearInterval(stop), 30000);
+    }).catch(reason => console.log(reason));
 }
 
 function ManipulationInputOptions() {
@@ -173,9 +185,7 @@ function AugmentationOptionsComponent({setTileData}) {
                                         title="select-files"
                                         color="default"
                                         startIcon={<AddPhotoAlternateSharp/>}
-                                        onClick={() => handleSelectFiles().then(data =>
-                                            setTimeout(() => setTileData(data), 1000)
-                                        ).catch(reason => console.log(reason))}
+                                        onClick={() => handleSelectFiles(setTileData)}
                                     >
                                         Select Files
                                     </Button>
