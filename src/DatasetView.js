@@ -78,7 +78,7 @@ function ManipulationInputOptions() {
                 </Grid>
                 <Grid item xs={6}>
                     <InputLabel htmlFor="blur-pixels-value">Pixels</InputLabel>
-                    <Input id="blur-pixels-value"
+                    <Input id="blur-pixels-value" defaultValue={0}
                            endAdornment={<InputAdornment position="end">px</InputAdornment>}
                     />
                 </Grid>
@@ -98,7 +98,7 @@ function ManipulationInputOptions() {
                 </Grid>
                 <Grid item xs={6}>
                     <InputLabel htmlFor="noise-value">Standard Deviation</InputLabel>
-                    <Input id="noise-value"
+                    <Input id="noise-value" defaultValue={0}
                            endAdornment={<InputAdornment position="end">unit</InputAdornment>}
                     />
                 </Grid>
@@ -107,6 +107,46 @@ function ManipulationInputOptions() {
                                 gutterBottom>Probability</Typography>
                     <Slider defaultValue={0} min={0} max={1} step={0.1} marks
                             aria-labelledby="noise-probability"
+                            valueLabelDisplay="auto"
+                            getAriaValueText={value => `${value * 100}%`}
+                    />
+                </Grid>
+            </Grid>
+            <Grid item container xs={12} spacing={1}>
+                <Grid item xs={12}>
+                    <Typography color="textPrimary" variant="h6">Rotate</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                    <InputLabel htmlFor="rotate-value">Maximum Angle</InputLabel>
+                    <Input id="rotate-value" defaultValue={0}
+                           endAdornment={<InputAdornment position="end">deg</InputAdornment>}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <Typography id="rotate-probability" component={InputLabel}
+                                gutterBottom>Probability</Typography>
+                    <Slider defaultValue={0} min={0} max={1} step={0.1} marks
+                            aria-labelledby="rotate-probability"
+                            valueLabelDisplay="auto"
+                            getAriaValueText={value => `${value * 100}%`}
+                    />
+                </Grid>
+            </Grid>
+            <Grid item container xs={12} spacing={1}>
+                <Grid item xs={12}>
+                    <Typography color="textPrimary" variant="h6">Crop</Typography>
+                </Grid>
+                <Grid item xs={6}>
+                    <InputLabel htmlFor="crop-value">Percentage</InputLabel>
+                    <Input id="crop-value" defaultValue={0}
+                           endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <Typography id="crop-probability" component={InputLabel}
+                                gutterBottom>Probability</Typography>
+                    <Slider defaultValue={0} min={0} max={1} step={0.1} marks
+                            aria-labelledby="crop-probability"
                             valueLabelDisplay="auto"
                             getAriaValueText={value => `${value * 100}%`}
                     />
@@ -135,7 +175,7 @@ function AugmentationOptionsComponent({setTileData}) {
                                         startIcon={<AddPhotoAlternateSharp/>}
                                         onClick={() => handleSelectFiles().then(data =>
                                             setTimeout(() => setTileData(data), 1000)
-                                        )}
+                                        ).catch(reason => console.log(reason))}
                                     >
                                         Select Files
                                     </Button>
