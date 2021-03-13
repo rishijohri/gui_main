@@ -6,10 +6,12 @@ import {io} from "socket.io-client";
 function ResultView() {
     const socket = io("http://localhost:5000/results");
     socket.on("connect", () => {
-        socket.emit("images", {data: "images/jpeg, base64, abcdefghijklmnopqrstuvwxyz"});
-        socket.on("processed_images", (data) => {
-            console.log(data);
+        const imagesData = {data: "images/jpeg, base64, gibberish gibberish gibberish"};
+        socket.emit("images", imagesData);
+        socket.on("processed_images", (responseData) => {
+            console.log(responseData);
             // do something with processed images
+            // disconnect if not needed again
             socket.disconnect();
         });
     });
