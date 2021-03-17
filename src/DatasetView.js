@@ -17,6 +17,8 @@ import {
 import {fileOpen} from "browser-fs-access";
 import PreviewImagesComponent from "./PreviewImagesComponent";
 import {AddPhotoAlternateSharp, VisibilitySharp, CloudUploadSharp} from "@material-ui/icons";
+import {io} from "socket.io-client";
+import {backendURL} from "./backendConfig";
 
 async function handleOpenAndReadFiles() {
     // get files from user
@@ -54,9 +56,21 @@ function handleSelectFiles(setTileData) {
                 clearInterval(stop);
             }
         }, 10);
-        // stop interval after 30s automatically
+        // stop interval after 30s automatically - default
         setTimeout(() => clearInterval(stop), 30000);
     }).catch(reason => console.log(reason));
+}
+
+function handlePreviewImages(tileData) {
+    // temporary socket only to send images data
+    const socket = io(backendURL);
+    const stop = setInterval(() => {
+        if (socket.connected) {
+            socket.emit("apply_operations", tileData);
+            socket.disconnect();
+            clearInterval(stop);
+        }
+    }, 100);
 }
 
 function ManipulationInputOptions() {
@@ -168,7 +182,7 @@ function ManipulationInputOptions() {
     );
 }
 
-function AugmentationOptionsComponent({setTileData}) {
+function AugmentationOptionsComponent({tileData, setTileData}) {
     return (
         <React.Fragment>
             <Paper variant="outlined">
@@ -193,6 +207,7 @@ function AugmentationOptionsComponent({setTileData}) {
                                         title="preview-images"
                                         color="primary"
                                         startIcon={<VisibilitySharp/>}
+                                        onClick={() => handlePreviewImages(tileData)}
                                     >
                                         Preview Images
                                     </Button>
@@ -217,14 +232,20 @@ function AugmentationOptionsComponent({setTileData}) {
 }
 
 function DatasetView() {
-    // view states
+    // setup state variables
+    const [socket,] = React.useState(io(backendURL));   // main socket - to handle updates
     const [tileData, setTileData] = React.useState([]);
+
+    // register socket events
+    socket.on("processed_images", processedImagesData => {
+        setTileData(processedImagesData);  // update the component state with new 'tileData'
+    });
 
     return (
         <React.Fragment>
             <Grid container spacing={1}>
                 <Grid item xs={6}>
-                    <AugmentationOptionsComponent setTileData={setTileData}/>
+                    <AugmentationOptionsComponent tileData={tileData} setTileData={setTileData}/>
                 </Grid>
                 <Grid item xs={6}>
                     <PreviewImagesComponent tileData={tileData}/>
