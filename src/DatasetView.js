@@ -19,7 +19,12 @@ import PreviewImagesComponent from "./PreviewImagesComponent";
 import {AddPhotoAlternateSharp, VisibilitySharp, CloudUploadSharp} from "@material-ui/icons";
 import {io} from "socket.io-client";
 import {backendURL} from "./backendConfig";
-
+//  function_number is the number of functions or operations that we can apply on the image, like noise, rotate, translate, zoom etc.
+let function_number = 4
+let probability_array = new Array(function_number).fill(0)
+let value_array = new Array(function_number).fill(0)
+// Starting Main Socket conncetion it will be restarted if it is disconnected and it is needed
+let main_socket = io(backendURL)
 async function handleOpenAndReadFiles() {
     // get files from user
     const blobs = await fileOpen({
@@ -62,15 +67,37 @@ function handleSelectFiles(setTileData) {
 }
 
 function handlePreviewImages(tileData) {
-    // temporary socket only to send images data
-    const socket = io(backendURL);
-    const stop = setInterval(() => {
-        if (socket.connected) {
-            socket.emit("apply_operations", tileData);
-            socket.disconnect();
-            clearInterval(stop);
-        }
-    }, 100);
+    // manipulation_data is a dictionary as follows
+    //  for 1st manipulation data we have these
+    //  param_1 : includes value of parameter in the appropiate range, also parameter can be anything even an list
+    //  prob_1 : is the probability of images on which param 1 is applied
+    //  if parameter is not applied then that parameter should be marked 0 both param_i and prob_i
+    // refer functions to get idea about range of these functions
+    // 0 : add_noise | 1: rotate_image | 2: translate | 3: zoom
+            let manipulation_prob = probability_array
+            let manipulation_val = value_array
+            console.log("about to send data")
+            let manipulation_data = {
+                "param_0": value_array[0],
+                "prob_0": probability_array[0],
+                "param_1": value_array[1],
+                "prob_1": probability_array[1],
+                "param_2": value_array[2],
+                "prob_2": probability_array[2],
+                "param_3": value_array[3],
+                "prob_3": probability_array[3],
+            }
+            if (!main_socket.connected) {
+                main_socket.connect()
+            }
+            if (main_socket.connected) {
+                console.log("ready to send")
+                main_socket.emit("apply_operations", {"images":tileData,
+                                            "operations": manipulation_data,
+                                            });
+            
+            }
+            console.log("data sent")
 }
 
 function ManipulationInputOptions() {
@@ -100,20 +127,32 @@ function ManipulationInputOptions() {
             </Grid>
             <Grid item container xs={12} spacing={1}>
                 <Grid item xs={12}>
-                    <Typography color="textPrimary" variant="h6">Blur</Typography>
+                    <Typography color="textPrimary" variant="h6">Translate</Typography>
                 </Grid>
-                <Grid item xs={6}>
-                    <InputLabel htmlFor="blur-pixels-value">Pixels</InputLabel>
-                    <Input id="blur-pixels-value" defaultValue={0}
-                           endAdornment={<InputAdornment position="end">px</InputAdornment>}
+                <Grid item xs={5}>
+                <Typography id="Translate-value" component={InputLabel}
+                                gutterBottom>Length</Typography>
+                <Slider defaultValue={0} min={0} max={20} step={1} marks
+                            aria-labelledby="Translate-value"
+                            valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                value_array[2] = value
+                            }}
+                            // track = "inverted"
+                            getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
-                <Grid item xs={6}>
-                    <Typography id="blur-probability" component={InputLabel}
+                <Grid item xs={1}>
+                </Grid>
+                <Grid item xs={5}>
+                    <Typography id="Translate-probability" component={InputLabel}
                                 gutterBottom>Probability</Typography>
                     <Slider defaultValue={0} min={0} max={1} step={0.1} marks
-                            aria-labelledby="blur-probability"
+                            aria-labelledby="Translate-probability"
                             valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                probability_array[2] = value
+                            }}
                             getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
@@ -122,18 +161,29 @@ function ManipulationInputOptions() {
                 <Grid item xs={12}>
                     <Typography color="textPrimary" variant="h6">Noise</Typography>
                 </Grid>
-                <Grid item xs={6}>
-                    <InputLabel htmlFor="noise-value">Standard Deviation</InputLabel>
-                    <Input id="noise-value" defaultValue={0}
-                           endAdornment={<InputAdornment position="end">unit</InputAdornment>}
+                <Grid item xs={5}>
+                <Typography id="noise-value" component={InputLabel}
+                                gutterBottom>Value</Typography>
+                    <Slider defaultValue={0} min={0} max={1} step={0.1} marks
+                            aria-labelledby="noise-value"
+                            valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                value_array[0] = value
+                            }}
+                            getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={1}>
+                </Grid>
+                <Grid item xs={5}>
                     <Typography id="noise-probability" component={InputLabel}
                                 gutterBottom>Probability</Typography>
                     <Slider defaultValue={0} min={0} max={1} step={0.1} marks
                             aria-labelledby="noise-probability"
                             valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                probability_array[0] = value
+                            }}
                             getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
@@ -142,38 +192,60 @@ function ManipulationInputOptions() {
                 <Grid item xs={12}>
                     <Typography color="textPrimary" variant="h6">Rotate</Typography>
                 </Grid>
-                <Grid item xs={6}>
-                    <InputLabel htmlFor="rotate-value">Maximum Angle</InputLabel>
-                    <Input id="rotate-value" defaultValue={0}
-                           endAdornment={<InputAdornment position="end">deg</InputAdornment>}
+                <Grid item xs={5}>
+                <Typography id="rotate-value" component={InputLabel}
+                                gutterBottom>Value</Typography>
+                    <Slider defaultValue={0} min={0} max={360} step={15} marks
+                            aria-labelledby="rotate-value"
+                            valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                value_array[1] = value
+                            }}
+                            getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={1}>
+                </Grid>
+                <Grid item xs={5}>
                     <Typography id="rotate-probability" component={InputLabel}
                                 gutterBottom>Probability</Typography>
                     <Slider defaultValue={0} min={0} max={1} step={0.1} marks
                             aria-labelledby="rotate-probability"
                             valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                probability_array[1] = value
+                            }}
                             getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
             </Grid>
             <Grid item container xs={12} spacing={1}>
                 <Grid item xs={12}>
-                    <Typography color="textPrimary" variant="h6">Crop</Typography>
+                    <Typography color="textPrimary" variant="h6">Zoom</Typography>
                 </Grid>
-                <Grid item xs={6}>
-                    <InputLabel htmlFor="crop-value">Percentage</InputLabel>
-                    <Input id="crop-value" defaultValue={0}
-                           endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                <Grid item xs={5}>
+                <Typography id="zoom-value" component={InputLabel}
+                                gutterBottom>Amount</Typography>
+                    <Slider defaultValue={0} min={0} max={2} step={0.1} marks
+                            aria-labelledby="zoom-value"
+                            valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                value_array[3] = value
+                            }}
+                            getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
-                <Grid item xs={6}>
-                    <Typography id="crop-probability" component={InputLabel}
+                <Grid item xs={1}>
+                </Grid>
+                <Grid item xs={5}>
+                    <Typography id="zoom-probability" component={InputLabel}
                                 gutterBottom>Probability</Typography>
                     <Slider defaultValue={0} min={0} max={1} step={0.1} marks
-                            aria-labelledby="crop-probability"
+                            aria-labelledby="zoom-probability"
                             valueLabelDisplay="auto"
+                            onChange = {(e, value) => {
+                                probability_array[3] = value
+                            }}
                             getAriaValueText={value => `${value * 100}%`}
                     />
                 </Grid>
@@ -183,6 +255,11 @@ function ManipulationInputOptions() {
 }
 
 function AugmentationOptionsComponent({tileData, setTileData}) {
+    // const [socket, ] = React.useState(io(backendURL));
+    // let socket = io(backendURL)
+    if (!main_socket.connected) {
+        main_socket.connect()
+    }
     return (
         <React.Fragment>
             <Paper variant="outlined">
@@ -233,11 +310,13 @@ function AugmentationOptionsComponent({tileData, setTileData}) {
 
 function DatasetView() {
     // setup state variables
-    const [socket,] = React.useState(io(backendURL));   // main socket - to handle updates
+    // const [socket,] = React.useState(io(backendURL));   // main socket - to handle updates
     const [tileData, setTileData] = React.useState([]);
-
+    if (!main_socket.connected) {
+        main_socket.connect()
+    }
     // register socket events
-    socket.on("processed_images", processedImagesData => {
+    main_socket.on("processed_images", processedImagesData => {
         setTileData(processedImagesData);  // update the component state with new 'tileData'
     });
 
